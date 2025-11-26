@@ -1,4 +1,4 @@
-import { Configuration, LogLevel } from '@azure/msal-browser';
+import { PublicClientApplication, Configuration, LogLevel } from '@azure/msal-browser';
 
 export const msalConfig: Configuration = {
   auth: {
@@ -8,10 +8,27 @@ export const msalConfig: Configuration = {
   },
   cache: {
     cacheLocation: 'localStorage',
-    storeAuthStateInCookie: false
+    storeAuthStateInCookie: false,
+  },
+  system: {
+    loggerOptions: {
+      loggerCallback: (level, message, containsPii) => {
+        if (containsPii) return;
+        switch (level) {
+          case LogLevel.Error: console.error(message); break;
+          case LogLevel.Info: console.info(message); break;
+          case LogLevel.Verbose: console.debug(message); break;
+          case LogLevel.Warning: console.warn(message); break;
+        }
+      }
+    }
   }
 };
 
-export const loginRequest = {
-  scopes: ['User.Read']
-};
+export function initializeMsalInstance(): () => Promise<PublicClientApplication> {
+  const msalInstance = new PublicClientApplication(msalConfig);
+  return async () => {
+    await msalInstance.initialize(); // ✅ MUST await
+    return msalInstance;
+  };
+}
