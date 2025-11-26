@@ -1,62 +1,53 @@
-name: Azure Static Web Apps CI/CD
+name: Build & Deploy SWA Angular 21
 
 on:
   push:
-    branches:
-      - main
-  pull_request:
-    types: [opened, synchronize, reopened, closed]
-    branches:
-      - main
-  workflow_dispatch:
+    branches: [main]
 
 jobs:
-  build_and_deploy_job:
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
+  build:
     runs-on: ubuntu-latest
-    name: Build and Deploy Job
 
     steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: true
-          lfs: false
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      # Install Node 20 (required by Angular v21)
-      - name: Use Node 20
+      - name: Setup Node 20
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
       - name: Install dependencies
-        run: npm ci
-        working-directory: ./todo-app
+        run: |
+          cd todo-app
+          npm install
 
-      - name: Build Angular App
-        run: npm run build
-        working-directory: ./todo-app
+      - name: Build Angular
+        run: |
+          cd todo-app
+          npm run build --prod
 
-      - name: Build And Deploy
-        id: builddeploy
-        uses: Azure/static-web-apps-deploy@v1
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
         with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_VICTORIOUS_SEA_001E1471E }}
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          action: "upload"
+          name: angular-build
+          path: todo-app/dist/
 
-          # Static Web App Inputs
-          app_location: "todo-app"
-          api_location: ""
-          output_location: "dist/todo-app/browser"
-
-  close_pull_request_job:
-    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+  deploy:
     runs-on: ubuntu-latest
-    name: Close Pull Request Job
+    needs: build
+
     steps:
-      - name: Close Pull Request
-        id: closepullrequest
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: angular-build
+          path: dist
+
+      - name: Deploy to Azure Static Web Apps
         uses: Azure/static-web-apps-deploy@v1
         with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_VICTORIOUS_SEA_001E1471E }}
-          action: "close"
+          azure_static_web_apps_api_token: ${{ secrets.SWA_DEPLOY_TOKEN }}
+          action: upload
+          app_location: dist
+          skip_app_build: true
