@@ -8,6 +8,7 @@ import { TodoListComponent } from './todo-list/todo-list.component';
 import { MsalModule, MsalService, MsalGuard, MsalBroadcastService, MsalRedirectComponent } from '@azure/msal-angular';
 import { PublicClientApplication, InteractionType } from '@azure/msal-browser';
 import { msalConfig, loginRequest } from './auth-config';
+import { msalInstance } from '../main';
 
 @NgModule({
   declarations: [
@@ -19,7 +20,7 @@ import { msalConfig, loginRequest } from './auth-config';
     FormsModule,
     HttpClientModule,
     AppRoutingModule,
-    MsalModule.forRoot(new PublicClientApplication(msalConfig), {
+    MsalModule.forRoot(msalInstance, {
       interactionType: InteractionType.Redirect,
       authRequest: loginRequest,
     }, {
