@@ -1,6 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
 
 export interface TodoItem {
   id: string;
@@ -10,8 +8,7 @@ export interface TodoItem {
 
 @Component({
   selector: 'app-todo-list',
-  standalone: true,
-  imports: [FormsModule, CommonModule],
+  standalone: false,
   template: `
     <section>
       <h2>Your Todos</h2>
