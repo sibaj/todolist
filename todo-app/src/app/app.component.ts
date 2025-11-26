@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
-import { MsalService } from '@azure/msal-angular';
 import { AccountInfo } from '@azure/msal-browser';
+import { MsalService } from '@azure/msal-angular';
 
 @Component({
   selector: 'app-root',
