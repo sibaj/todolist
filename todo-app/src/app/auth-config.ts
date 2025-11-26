@@ -1,5 +1,5 @@
 import { ApplicationConfig } from '@angular/core';
-import { MsalGuardConfiguration } from '@azure/msal-angular';
+import { MSAL_GUARD_CONFIG, MSAL_INSTANCE, MSAL_INTERCEPTOR_CONFIG, MsalGuardConfiguration, MsalInterceptorConfiguration, MsalService } from '@azure/msal-angular';
 import { Configuration, InteractionType, LogLevel, PublicClientApplication } from '@azure/msal-browser';
 
 export const msalConfig: Configuration = {
@@ -44,7 +44,7 @@ export function MSALInstanceFactory(): PublicClientApplication {
     auth: {
       clientId: '64d6a144-d25d-45b2-ae5d-f22b6cd45f91',
       authority: 'https://login.microsoftonline.com/801949e9-b44a-44cc-b66c-4081418c9d5b',
-      redirectUri: 'http://localhost:4200',
+      redirectUri: 'https://victorious-sea-001e1471e.3.azurestaticapps.net',
     },
     cache: {
       cacheLocation: 'localStorage',
@@ -58,22 +58,41 @@ export function MSALGuardConfigFactory(): MsalGuardConfiguration {
   };
 }
 
-// const appConfig: ApplicationConfig = {
-//   providers: [
-//     // Provide the required services at the root level
-//     { provide: MSAL_INSTANCE, useFactory: MSALInstanceFactory },
-//     { provide: MSAL_GUARD_CONFIG, useFactory: MSALGuardConfigFactory },
-//     MsalService,
-//     MsalGuard,
-//     MsalBroadcastService,
-//     provideRouter(routes), // Your app routes
-//     provideHttpClient(withInterceptorsFromProviders([
-//       // Add MsalInterceptor as a provider
-//       {
-//         provide: HTTP_INTERCEPTORS,
-//         useClass: MsalInterceptor,
-//         multi: true,
-//       },
-//     ])),
-//   ]
-// };
+export function initializeMsalInstance() {
+  return new PublicClientApplication({
+    auth: {
+      clientId: '64d6a144-d25d-45b2-ae5d-f22b6cd45f91',
+      authority: 'https://login.microsoftonline.com/801949e9-b44a-44cc-b66c-4081418c9d5b',
+      redirectUri: 'https://victorious-sea-001e1471e.3.azurestaticapps.net',
+    },
+    cache: {
+      cacheLocation: 'localStorage',
+      storeAuthStateInCookie: true,
+    },
+  });
+}
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    {
+      provide: MSAL_INSTANCE,
+      useFactory: initializeMsalInstance,
+    },
+    MsalService,
+    {
+      provide: MSAL_GUARD_CONFIG,
+      useValue: {
+        interactionType: InteractionType.Redirect,
+      } as MsalGuardConfiguration,
+    },
+    {
+      provide: MSAL_INTERCEPTOR_CONFIG,
+      useValue: {
+        interactionType: InteractionType.Redirect,
+        protectedResourceMap: new Map<string, string[]>([
+          ['https://graph.microsoft.com/v1.0/me', ['user.read']]
+        ])
+      } as MsalInterceptorConfiguration,
+    }
+  ]
+};
