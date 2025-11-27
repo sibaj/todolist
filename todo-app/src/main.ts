@@ -1,9 +1,7 @@
-import { PublicClientApplication } from '@azure/msal-browser';
+import { bootstrapApplication } from '@angular/platform-browser';
 import { AppModule } from './app/app.module';
-import { platformBrowser } from '@angular/platform-browser';
-import { msalConfig } from './app/auth-config';
+import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 
-
-platformBrowser()
-	.bootstrapModule(AppModule)
-	.catch(err => console.error(err));
+platformBrowserDynamic()
+  .bootstrapModule(AppModule)
+  .catch(err => console.error(err));
