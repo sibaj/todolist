@@ -1,20 +1,25 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { MsalService } from '@azure/msal-angular';
 
 @Component({
   selector: 'app-root',
   standalone: false,
-  template: `<router-outlet></router-outlet>`
+  templateUrl: './app.component.html'
 })
-export class AppComponent implements OnInit {
+export class AppComponent {
+  private msal = inject(MsalService);
 
-  constructor(private msal: MsalService) {}
-
-  ngOnInit() {
-    this.msal.instance.handleRedirectPromise().then(() => {
-      if (!this.msal.instance.getActiveAccount()) {
-        this.msal.instance.loginRedirect();
-      }
+  logout() {
+    this.msal.logoutRedirect({
+      postLogoutRedirectUri: '/'
     });
+  }
+
+  login() {
+    this.msal.loginRedirect();
+  }
+
+  isLoggedIn() {
+    return this.msal.instance.getAllAccounts().length > 0;
   }
 }
